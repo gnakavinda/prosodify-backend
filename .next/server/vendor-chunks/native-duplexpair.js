@@ -1,0 +1,25 @@
+"use strict";
+/*
+ * ATTENTION: An "eval-source-map" devtool has been used.
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file with attached SourceMaps in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+exports.id = "vendor-chunks/native-duplexpair";
+exports.ids = ["vendor-chunks/native-duplexpair"];
+exports.modules = {
+
+/***/ "(rsc)/./node_modules/native-duplexpair/index.js":
+/*!*************************************************!*\
+  !*** ./node_modules/native-duplexpair/index.js ***!
+  \*************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+eval("\nconst Duplex = (__webpack_require__(/*! stream */ \"stream\").Duplex);\nconst kCallback = Symbol(\"Callback\");\nconst kOtherSide = Symbol(\"Other\");\nclass DuplexSocket extends Duplex {\n    constructor(options){\n        super(options);\n        this[kCallback] = null;\n        this[kOtherSide] = null;\n    }\n    _read() {\n        const callback = this[kCallback];\n        if (callback) {\n            this[kCallback] = null;\n            callback();\n        }\n    }\n    _write(chunk, encoding, callback) {\n        this[kOtherSide][kCallback] = callback;\n        this[kOtherSide].push(chunk);\n    }\n    _final(callback) {\n        this[kOtherSide].on(\"end\", callback);\n        this[kOtherSide].push(null);\n    }\n}\nclass DuplexPair {\n    constructor(options){\n        this.socket1 = new DuplexSocket(options);\n        this.socket2 = new DuplexSocket(options);\n        this.socket1[kOtherSide] = this.socket2;\n        this.socket2[kOtherSide] = this.socket1;\n    }\n}\nmodule.exports = DuplexPair;\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9ub2RlX21vZHVsZXMvbmF0aXZlLWR1cGxleHBhaXIvaW5kZXguanMiLCJtYXBwaW5ncyI6IkFBQUE7QUFDQSxNQUFNQSxTQUFTQyxvREFBd0I7QUFFdkMsTUFBTUMsWUFBWUMsT0FBTztBQUN6QixNQUFNQyxhQUFhRCxPQUFPO0FBRTFCLE1BQU1FLHFCQUFxQkw7SUFDekJNLFlBQVlDLE9BQU8sQ0FBRTtRQUNuQixLQUFLLENBQUNBO1FBQ04sSUFBSSxDQUFDTCxVQUFVLEdBQUc7UUFDbEIsSUFBSSxDQUFDRSxXQUFXLEdBQUc7SUFDckI7SUFFQUksUUFBUTtRQUNOLE1BQU1DLFdBQVcsSUFBSSxDQUFDUCxVQUFVO1FBQ2hDLElBQUlPLFVBQVU7WUFDWixJQUFJLENBQUNQLFVBQVUsR0FBRztZQUNsQk87UUFDRjtJQUNGO0lBRUFDLE9BQU9DLEtBQUssRUFBRUMsUUFBUSxFQUFFSCxRQUFRLEVBQUU7UUFDaEMsSUFBSSxDQUFDTCxXQUFXLENBQUNGLFVBQVUsR0FBR087UUFDOUIsSUFBSSxDQUFDTCxXQUFXLENBQUNTLElBQUksQ0FBQ0Y7SUFDeEI7SUFFQUcsT0FBT0wsUUFBUSxFQUFFO1FBQ2YsSUFBSSxDQUFDTCxXQUFXLENBQUNXLEVBQUUsQ0FBQyxPQUFPTjtRQUMzQixJQUFJLENBQUNMLFdBQVcsQ0FBQ1MsSUFBSSxDQUFDO0lBQ3hCO0FBQ0Y7QUFFQSxNQUFNRztJQUNKVixZQUFZQyxPQUFPLENBQUU7UUFDbkIsSUFBSSxDQUFDVSxPQUFPLEdBQUcsSUFBSVosYUFBYUU7UUFDaEMsSUFBSSxDQUFDVyxPQUFPLEdBQUcsSUFBSWIsYUFBYUU7UUFDaEMsSUFBSSxDQUFDVSxPQUFPLENBQUNiLFdBQVcsR0FBRyxJQUFJLENBQUNjLE9BQU87UUFDdkMsSUFBSSxDQUFDQSxPQUFPLENBQUNkLFdBQVcsR0FBRyxJQUFJLENBQUNhLE9BQU87SUFDekM7QUFDRjtBQUVBRSxPQUFPQyxPQUFPLEdBQUdKIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vcHJvc29kaWZ5LWJhY2tlbmQvLi9ub2RlX21vZHVsZXMvbmF0aXZlLWR1cGxleHBhaXIvaW5kZXguanM/YTdkZiJdLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIHN0cmljdCc7XG5jb25zdCBEdXBsZXggPSByZXF1aXJlKCdzdHJlYW0nKS5EdXBsZXg7XG5cbmNvbnN0IGtDYWxsYmFjayA9IFN5bWJvbCgnQ2FsbGJhY2snKTtcbmNvbnN0IGtPdGhlclNpZGUgPSBTeW1ib2woJ090aGVyJyk7XG5cbmNsYXNzIER1cGxleFNvY2tldCBleHRlbmRzIER1cGxleCB7XG4gIGNvbnN0cnVjdG9yKG9wdGlvbnMpIHtcbiAgICBzdXBlcihvcHRpb25zKTtcbiAgICB0aGlzW2tDYWxsYmFja10gPSBudWxsO1xuICAgIHRoaXNba090aGVyU2lkZV0gPSBudWxsO1xuICB9XG5cbiAgX3JlYWQoKSB7XG4gICAgY29uc3QgY2FsbGJhY2sgPSB0aGlzW2tDYWxsYmFja107XG4gICAgaWYgKGNhbGxiYWNrKSB7XG4gICAgICB0aGlzW2tDYWxsYmFja10gPSBudWxsO1xuICAgICAgY2FsbGJhY2soKTtcbiAgICB9XG4gIH1cblxuICBfd3JpdGUoY2h1bmssIGVuY29kaW5nLCBjYWxsYmFjaykge1xuICAgIHRoaXNba090aGVyU2lkZV1ba0NhbGxiYWNrXSA9IGNhbGxiYWNrO1xuICAgIHRoaXNba090aGVyU2lkZV0ucHVzaChjaHVuayk7XG4gIH1cblxuICBfZmluYWwoY2FsbGJhY2spIHtcbiAgICB0aGlzW2tPdGhlclNpZGVdLm9uKCdlbmQnLCBjYWxsYmFjayk7XG4gICAgdGhpc1trT3RoZXJTaWRlXS5wdXNoKG51bGwpO1xuICB9XG59XG5cbmNsYXNzIER1cGxleFBhaXIge1xuICBjb25zdHJ1Y3RvcihvcHRpb25zKSB7XG4gICAgdGhpcy5zb2NrZXQxID0gbmV3IER1cGxleFNvY2tldChvcHRpb25zKTtcbiAgICB0aGlzLnNvY2tldDIgPSBuZXcgRHVwbGV4U29ja2V0KG9wdGlvbnMpO1xuICAgIHRoaXMuc29ja2V0MVtrT3RoZXJTaWRlXSA9IHRoaXMuc29ja2V0MjtcbiAgICB0aGlzLnNvY2tldDJba090aGVyU2lkZV0gPSB0aGlzLnNvY2tldDE7XG4gIH1cbn1cblxubW9kdWxlLmV4cG9ydHMgPSBEdXBsZXhQYWlyO1xuIl0sIm5hbWVzIjpbIkR1cGxleCIsInJlcXVpcmUiLCJrQ2FsbGJhY2siLCJTeW1ib2wiLCJrT3RoZXJTaWRlIiwiRHVwbGV4U29ja2V0IiwiY29uc3RydWN0b3IiLCJvcHRpb25zIiwiX3JlYWQiLCJjYWxsYmFjayIsIl93cml0ZSIsImNodW5rIiwiZW5jb2RpbmciLCJwdXNoIiwiX2ZpbmFsIiwib24iLCJEdXBsZXhQYWlyIiwic29ja2V0MSIsInNvY2tldDIiLCJtb2R1bGUiLCJleHBvcnRzIl0sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///(rsc)/./node_modules/native-duplexpair/index.js\n");
+
+/***/ })
+
+};
+;
