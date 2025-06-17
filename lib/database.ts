@@ -41,7 +41,12 @@ export async function initializeDatabase() {
         name NVARCHAR(255) NOT NULL,
         password NVARCHAR(255) NOT NULL,
         createdAt DATETIME2 DEFAULT GETDATE(),
-        updatedAt DATETIME2 DEFAULT GETDATE()
+        updatedAt DATETIME2 DEFAULT GETDATE(),
+        last_login_at DATETIME2,
+        login_count INT DEFAULT 0,
+        subscriptionStatus NVARCHAR(20) DEFAULT 'free',
+        monthlyUsage INT DEFAULT 0,
+        usageResetDate DATETIME2 DEFAULT GETDATE()
       )
     `)
 
@@ -55,6 +60,8 @@ export async function initializeDatabase() {
         text NVARCHAR(MAX) NOT NULL,
         voice NVARCHAR(100),
         settings NVARCHAR(MAX), -- JSON string of voice settings
+        audioUrl NVARCHAR(500), -- Azure Blob Storage URL
+        fileSize INT, -- File size in bytes
         createdAt DATETIME2 DEFAULT GETDATE(),
         FOREIGN KEY (userId) REFERENCES users(id)
       )
@@ -137,4 +144,152 @@ export async function getUserLoginHistory(userId: string) {
     `)
   
   return result.recordset[0] || null
+}
+
+// SaaS Functions - Get user with subscription info
+export async function getUserWithSubscription(userId: string) {
+  const pool = await getDbConnection()
+  
+  const result = await pool.request()
+    .input('userId', sql.NVarChar(50), userId)
+    .query(`
+      SELECT 
+        id, email, name, 
+        subscriptionStatus, monthlyUsage, usageResetDate,
+        last_login_at, login_count, createdAt
+      FROM users 
+      WHERE id = @userId
+    `)
+  
+  return result.recordset[0] || null
+}
+
+// Update user usage
+export async function updateUserUsage(userId: string, charactersUsed: number) {
+  const pool = await getDbConnection()
+  
+  await pool.request()
+    .input('userId', sql.NVarChar(50), userId)
+    .input('charactersUsed', sql.Int, charactersUsed)
+    .query(`
+      UPDATE users 
+      SET monthlyUsage = monthlyUsage + @charactersUsed
+      WHERE id = @userId
+    `)
+}
+
+// Check if user can use characters
+export async function canUserUseCharacters(userId: string, charactersNeeded: number): Promise<{ canUse: boolean, currentUsage: number, limit: number }> {
+  const user = await getUserWithSubscription(userId)
+  
+  if (!user) {
+    return { canUse: false, currentUsage: 0, limit: 0 }
+  }
+
+  const limits = {
+    free: 5000,
+    pro: 100000,
+    premium: 500000
+  }
+
+  const userLimit = limits[user.subscriptionStatus as keyof typeof limits] || 5000
+  const canUse = (user.monthlyUsage + charactersNeeded) <= userLimit
+
+  return {
+    canUse,
+    currentUsage: user.monthlyUsage,
+    limit: userLimit
+  }
+}
+
+// Reset monthly usage (call this monthly)
+export async function resetMonthlyUsage() {
+  const pool = await getDbConnection()
+  
+  await pool.request().query(`
+    UPDATE users 
+    SET monthlyUsage = 0, 
+        usageResetDate = GETDATE()
+    WHERE DATEDIFF(month, usageResetDate, GETDATE()) >= 1
+  `)
+}
+
+// Save audio file record
+export async function saveAudioFile(audioData: {
+  userId: string
+  filename: string
+  text: string
+  voice?: string
+  settings?: any
+  audioUrl?: string
+  fileSize?: number
+}) {
+  const pool = await getDbConnection()
+  
+  const audioId = `audio_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  
+  await pool.request()
+    .input('id', sql.NVarChar(50), audioId)
+    .input('userId', sql.NVarChar(50), audioData.userId)
+    .input('filename', sql.NVarChar(255), audioData.filename)
+    .input('text', sql.NVarChar(sql.MAX), audioData.text)
+    .input('voice', sql.NVarChar(100), audioData.voice || null)
+    .input('settings', sql.NVarChar(sql.MAX), audioData.settings ? JSON.stringify(audioData.settings) : null)
+    .input('audioUrl', sql.NVarChar(500), audioData.audioUrl || null)
+    .input('fileSize', sql.Int, audioData.fileSize || null)
+    .query(`
+      INSERT INTO audio_files (id, userId, filename, text, voice, settings, audioUrl, fileSize)
+      VALUES (@id, @userId, @filename, @text, @voice, @settings, @audioUrl, @fileSize)
+    `)
+  
+  return audioId
+}
+
+// Get user's audio files
+export async function getUserAudioFiles(userId: string, limit: number = 10) {
+  const pool = await getDbConnection()
+  
+  const result = await pool.request()
+    .input('userId', sql.NVarChar(50), userId)
+    .input('limit', sql.Int, limit)
+    .query(`
+      SELECT TOP (@limit)
+        id, filename, text, voice, settings, audioUrl, fileSize, createdAt
+      FROM audio_files 
+      WHERE userId = @userId
+      ORDER BY createdAt DESC
+    `)
+  
+  return result.recordset
+}
+
+// Get user dashboard data
+export async function getUserDashboard(userId: string) {
+  const user = await getUserWithSubscription(userId)
+  const recentFiles = await getUserAudioFiles(userId, 5)
+  
+  const limits = {
+    free: 5000,
+    pro: 100000,
+    premium: 500000
+  }
+
+  const userLimit = limits[user?.subscriptionStatus as keyof typeof limits] || 5000
+
+  return {
+    user: {
+      id: user?.id,
+      email: user?.email,
+      name: user?.name,
+      subscriptionStatus: user?.subscriptionStatus || 'free',
+      monthlyUsage: user?.monthlyUsage || 0,
+      usageResetDate: user?.usageResetDate
+    },
+    usage: {
+      current: user?.monthlyUsage || 0,
+      limit: userLimit,
+      remaining: userLimit - (user?.monthlyUsage || 0)
+    },
+    recentFiles
+  }
 }
