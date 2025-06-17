@@ -4,17 +4,15 @@ import sql from 'mssql'
 const config: sql.config = {
   server: process.env.AZURE_SQL_SERVER!,
   database: process.env.AZURE_SQL_DATABASE!,
-  authentication: {
-    type: 'default',
-    options: {
-      userName: process.env.AZURE_SQL_USERNAME!,
-      password: process.env.AZURE_SQL_PASSWORD!,
-    }
-  },
+  user: process.env.AZURE_SQL_USERNAME!,
+  password: process.env.AZURE_SQL_PASSWORD!,
   options: {
-    encrypt: true, // Required for Azure
+    encrypt: true,
     enableArithAbort: true,
-  },
+    trustServerCertificate: false,
+    connectTimeout: 30000,
+    requestTimeout: 30000
+  }
 }
 
 let pool: sql.ConnectionPool | undefined
